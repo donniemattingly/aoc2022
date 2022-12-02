@@ -22,13 +22,18 @@ defmodule Day1 do
 
   def parse_input(input) do
     input
-
   end
 
-  def solve(input) do
-    input
+  def solve() do
+    "inputs/input-1-1.txt"
+    |> File.read!()
     |> String.split("\n\n")
-    |> Enum.map(fn x -> x |> Utils.split_lines() |> Enum.map(&String.to_integer/1) |> Enum.sum end)
+    |> Enum.map(fn x ->
+      x
+      |> String.split("\n", trim: true)
+      |> Enum.map(&String.to_integer/1)
+      |> Enum.sum()
+    end)
     |> Enum.sort()
     |> Enum.reverse()
     |> Enum.take(3)
