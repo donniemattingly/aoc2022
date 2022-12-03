@@ -18,28 +18,31 @@ defmodule Day3 do
   end
 
   def get_common_char(line) do
-    l = String.length(line)
-    a = String.slice(line, 0, floor(l / 2))
-    b = String.slice(line, floor(l / 2), l)
+    l = round(String.length(line) / 2)
 
-    a_set = a |> String.graphemes() |> MapSet.new()
-    b_set = b |> String.graphemes() |> MapSet.new()
-
-    MapSet.intersection(a_set, b_set) |> MapSet.to_list() |> hd |> String.to_charlist()
+    line
+    |> String.graphemes()
+    |> Enum.split(l) # split in half
+    |> Tuple.to_list # {a, b} -> [a, b]
+    |> Enum.map(&MapSet.new/1) # convert each to set
+    |> Enum.reduce(&MapSet.intersection/2) # get intersection
+    |> MapSet.to_list() # back to list
+    |> hd # hd gets the head of a list
+    |> String.to_charlist() # convert string to charlist (list of integer codepoints)
   end
 
   def get_group_badge(lines) do
-    [a, b, c] = lines
+    lines
     |> Enum.map(&String.graphemes/1)
     |> Enum.map(&MapSet.new/1)
-
-    MapSet.intersection(a, b)
-    |> MapSet.intersection(c)
-    |> MapSet.to_list() |> hd |> String.to_charlist()
+    |> Enum.reduce(&MapSet.intersection/2)
+    |> MapSet.to_list()
+    |> hd
+    |> String.to_charlist()
   end
 
-  def score(num) when num < 97, do: num - 65 + 27
-  def score(num) when num >= 97, do: num - 97 + 1
+  def score(num) when num < ?a, do: num - ?A + 27
+  def score(num) when num >= ?a, do: num - ?a + 1
 
   def solve(input) do
     input
