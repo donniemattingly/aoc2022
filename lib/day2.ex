@@ -39,13 +39,9 @@ defmodule Day2 do
   def score2({"C", "Y"}), do: 6
   def score2({"C", "Z"}), do: 7
 
-  def val(a) do
-    case a do
-      "X" -> 1
-      "Y" -> 2
-      "Z" -> 3
-    end
-  end
+  def val("X"), do: 1
+  def val("Y"), do: 2
+  def val("Z"), do: 3
 
   def solve(input) do
     input
@@ -55,7 +51,7 @@ defmodule Day2 do
 
   def solve2(input) do
     input
-    |> Enum.map(fn {a, b} -> score2({a, b}) end)
+    |> Enum.map(&score/1)
     |> Enum.sum()
   end
 end
