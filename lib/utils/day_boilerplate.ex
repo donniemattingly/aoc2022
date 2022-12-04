@@ -2,7 +2,7 @@ defmodule Utils.DayBoilerplate do
   defmacro __using__(options) do
     quote do
       def real_input do
-        Utils.get_input(unquote(Keyword.get(options, :day)), 1)
+        AdventOfCode.download_input(2022, unquote(Keyword.get(options, :day)))
       end
 
       def sample_input do

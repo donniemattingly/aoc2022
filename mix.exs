@@ -36,6 +36,7 @@ defmodule Adventofcode.MixProject do
       {:combine, "~> 0.10.0"},
       {:color_utils, "0.2.0"},
       {:debounce, "~> 0.1.0"},
+      {:httpoison, "~> 1.8"},
       {:comb, git: "https://github.com/tallakt/comb.git"}
     ]
   end
