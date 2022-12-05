@@ -35,12 +35,12 @@ defmodule Day4 do
   def solve(input) do
     input
     |> Enum.filter(fn [a, b] ->
-      MapSet.intersection(a, b) or MapSet.subset?(b, a)
+      MapSet.subset?(a, b) or MapSet.subset?(b, a)
     end)
     |> Enum.count()
   end
 
-  def solve(input) do
+  def solve2(input) do
     input
     |> Enum.filter(fn [a, b] ->
       MapSet.disjoint?(a, b)
