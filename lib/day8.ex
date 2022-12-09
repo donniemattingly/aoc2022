@@ -75,7 +75,6 @@ defmodule Day8 do
   end
 
   def get_score_in_direction(_, nil, _), do: 0
-
   def get_score_in_direction(map, direction, point) do
     IO.inspect(direction, label: "direction")
 
