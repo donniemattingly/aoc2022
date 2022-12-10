@@ -128,7 +128,6 @@ defmodule Day9 do
 
     tail = Enum.at(new_rest, -1)
 
-    IO.inspect(new_rest)
     display_snake(new_rest)
     do_moves2(new_rest, moves, [tail | visited])
   end
