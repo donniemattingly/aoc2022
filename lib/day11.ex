@@ -67,20 +67,10 @@ defmodule Day11 do
   end
 
   def parse_monkey(monkey) do
-    m =
-      monkey
-      |> String.split("\n", trim: true)
-      |> Enum.map(&parse_attribute/1)
-      |> Map.new()
-
-    throw = fn x ->
-      case m[:test].(x) do
-        true -> m[true]
-        false -> m[false]
-      end
-    end
-
-    Map.put(m, :throw, throw)
+    monkey
+    |> String.split("\n", trim: true)
+    |> Enum.map(&parse_attribute/1)
+    |> Map.new()
   end
 
   def parse_attribute("Monkey " <> id) do
@@ -103,7 +93,11 @@ defmodule Day11 do
   end
 
   def parse_attribute("  Test: divisible by " <> test) do
-    {:test, fn old -> rem(old, String.to_integer(test)) == 0 end}
+    {:test, test}
+  end
+
+  def do_test(old, test) do
+    rem(old, String.to_integer(test)) == 0
   end
 
   def parse_attribute("    If true: throw to monkey " <> id) do
@@ -116,16 +110,31 @@ defmodule Day11 do
 
   def bored(level), do: div(level, 3)
 
-  def run_round(items, [], _), do: items
+  def run_round(a, b, c, d \\ nil)
+  def run_round(items, [], _, _shared_div), do: items
 
-  def run_round(items, [m | monkeys], counter) do
+  def run_round(items, [m | monkeys], counter, shared_div) do
     case Map.get(items, m[:name]) do
       [] ->
-        run_round(items, monkeys, counter)
+        run_round(items, monkeys, counter, shared_div)
 
       [item | rest] ->
-        new_val = item |> m[:operation].()
-        throw_to = m[:throw].(new_val)
+        new_val =
+          case shared_div do
+            nil ->
+              item |> m[:operation].() |> bored()
+
+            _ ->
+              item
+              |> m[:operation].()
+              |> rem(shared_div)
+          end
+
+        throw_to =
+          case rem(new_val, String.to_integer(m[:test])) == 0 do
+            true -> m[true]
+            false -> m[false]
+          end
 
         send(counter, {:increment, m[:name]})
 
@@ -135,8 +144,8 @@ defmodule Day11 do
           |> Map.update(throw_to, [new_val], &(&1 ++ [new_val]))
 
         case rest do
-          [] -> run_round(new_items, monkeys, counter)
-          _ -> run_round(new_items, [m | monkeys], counter)
+          [] -> run_round(new_items, monkeys, counter, shared_div)
+          _ -> run_round(new_items, [m | monkeys], counter, shared_div)
         end
     end
   end
@@ -152,9 +161,41 @@ defmodule Day11 do
 
     mlist = Map.values(monkeys)
 
-    1..10000
+    1..20
     |> Enum.reduce(items, fn _, items ->
       run_round(items, mlist, counter)
+    end)
+
+    send(counter, {:get, self()})
+
+    receive do
+      state ->
+        state
+        |> Map.values()
+        |> Enum.sort()
+        |> Enum.reverse()
+        |> Enum.take(2)
+        |> Enum.reduce(1, &(&1 * &2))
+    end
+  end
+
+  def solve2(input) do
+    {monkeys, items} = input
+    counter_state = monkeys |> Map.keys() |> Enum.map(&{&1, 0}) |> Map.new()
+    {:ok, counter} = MonkeyCounter.start_link(counter_state)
+
+    mlist = Map.values(monkeys)
+
+    shared_div =
+      mlist
+      |> Enum.map(fn m -> String.to_integer(m[:test]) end)
+      |> Enum.reduce(&Kernel.*/2)
+      |> IO.inspect()
+
+    1..10_000
+    |> Enum.reduce(items, fn count, items ->
+      #      IO.puts("Round #{count}")
+      run_round(items, mlist, counter, shared_div)
     end)
 
     send(counter, {:get, self()})
