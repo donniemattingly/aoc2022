@@ -13,7 +13,7 @@ defmodule Day14 do
     |> Map.keys()
     |> Enum.filter(&is_tuple/1)
     |> Enum.map(fn p -> elem(p, pos) end)
-    |> Enum.min_max()
+    |> Enum.min_max(fn -> {0, 0} end)
   end
 
   def print_path(grid_map) do
