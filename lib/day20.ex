@@ -17,39 +17,43 @@ defmodule Day20 do
     input
     |> Utils.split_lines()
     |> Enum.map(&String.to_integer/1)
-    |> Enum.map(fn i -> {i, :unshifted} end)
+    |> Enum.with_index()
   end
 
-  def normalize_index(index, length) do
-    IO.puts "Normalizing #{index} with length #{length}"
-    if index < 0 do
-      length + index
-    else
-      rem(index, length)
-    end
-  end
+  def mix({x, i}, list) do
+    move_index = Enum.find_index(list, &(&1 == {x, i}))
+    {h, t} = Enum.split(list, move_index)
+    new_l = h ++ Enum.drop(t, 1)
+    length = length(new_l)
+    new_index = rem(length + rem(move_index + x, length), length)
 
-  def mix(list, start_index) do
-    index = Enum.find_index(list, &(elem(&1, 1) == :unshifted))
+    #    IO.puts(
+    #      "#{} moves between #{Enum.at(list, new_index) |> elem(0)} and #{Enum.at(list, new_index + 1) |> elem(0)}: "
+    #    )
 
-    {{num, :unshifted}, removed} = List.pop_at(list, index)
-
-    new_index = normalize_index(index + num, length(list))
-    new = List.insert_at(removed, new_index, {num, :shifted})
-
-    IO.puts("shifting num: #{num} at index: #{index} to index: #{new_index}")
-    new |> Enum.map(&elem(&1, 0)) |> Enum.join(", ") |> IO.puts()
-
-    IO.puts("")
-    if Enum.any?(new, fn {_, state} -> state == :unshifted end) do
-      mix(new, 0)
-    else
-      new
-    end
+    new = List.insert_at(new_l, new_index, {x, i})
+    #    new |> Enum.map(&elem(&1, 0)) |> Enum.join(", ") |> IO.puts()
+    new
   end
 
   def solve(input) do
-    input
-    |> mix(0)
+    mixed = input |> Enum.reduce(input, &mix/2)
+    base = Enum.find_index(mixed, fn {val, _} -> val == 0 end)
+
+    [1000, 2000, 3000]
+    |> Enum.map(fn i -> Enum.at(mixed, rem(base + i, length(mixed))) |> elem(0) end)
+    |> Enum.sum()
+  end
+
+  def solve2(input) do
+    orig = input |> Enum.map(fn {x, i} -> {x * 811_589_153, i} end)
+    mixed = (for _ <- 1..10, do: orig)
+    |> Enum.reduce(fn x, acc -> x ++ acc end)
+    |> Enum.reduce(orig, &mix/2)
+
+    base = Enum.find_index(mixed, fn {val, _} -> val == 0 end)
+    [1000, 2000, 3000]
+    |> Enum.map(fn i -> Enum.at(mixed, rem(base + i, length(mixed))) |> elem(0) end)
+    |> Enum.sum()
   end
 end
